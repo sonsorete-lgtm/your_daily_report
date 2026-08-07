@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    overscroll-behavior-y: none;
+  }
+  input, select, textarea {
+    /* Force dark theme on inputs at all times — prevents Android autofill
+       from overriding the app theme with light colors. */
+    background-color: rgb(30 41 59); /* slate-800 */
+    color: rgb(241 245 249); /* slate-100 */
+    -webkit-text-fill-color: rgb(241 245 249);
+    -webkit-box-shadow: 0 0 0 1000px rgb(30 41 59) inset;
+    transition: background-color 0s, color 0s;
+  }
+  /* Autofill pseudo-classes — override browser-injected styles */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: rgb(241 245 249);
+    -webkit-box-shadow: 0 0 0 1000px rgb(30 41 59) inset;
+    caret-color: rgb(241 245 249);
+  }
+}
+
+/* ─── Light theme overrides ─── */
+/* Components use dark Tailwind utility classes. When html.light is active,
+   these rules override them to light equivalents using raw CSS to avoid
+   circular @apply dependencies. */
+html.light body {
+  background-color: #f1f5f9; /* slate-100 */
+  color: #0f172a; /* slate-900 */
+}
+
+html.light .bg-slate-950 { background-color: #f1f5f9 !important; }
+html.light .bg-slate-950\/80 { background-color: rgba(241,245,249,0.8) !important; }
+html.light .bg-slate-900 { background-color: #ffffff !important; }
+html.light .bg-slate-900\/60 { background-color: rgba(255,255,255,0.7) !important; }
+html.light .bg-slate-900\/80 { background-color: rgba(255,255,255,0.8) !important; }
+html.light .bg-slate-800 { background-color: #f1f5f9 !important; }
+html.light .bg-slate-800\/40 { background-color: rgba(226,232,240,0.6) !important; }
+html.light .bg-slate-800\/30 { background-color: rgba(226,232,240,0.4) !important; }
+html.light .bg-slate-800\/50 { background-color: rgba(226,232,240,0.5) !important; }
+html.light .bg-slate-800\/60 { background-color: rgba(226,232,240,0.6) !important; }
+html.light .bg-slate-800\/80 { background-color: rgba(226,232,240,0.8) !important; }
+html.light .bg-slate-950\/60 { background-color: rgba(226,232,240,0.6) !important; }
+
+/* Button hover/active states in light theme */
+html.light .hover\:bg-slate-800:hover { background-color: #e2e8f0 !important; }
+html.light .hover\:bg-slate-700:hover { background-color: #cbd5e1 !important; }
+html.light .hover\:bg-slate-800\/40:hover { background-color: rgba(226,232,240,0.6) !important; }
+html.light .hover\:bg-slate-800\/60:hover { background-color: rgba(226,232,240,0.6) !important; }
+html.light .active\:bg-slate-700:active { background-color: #cbd5e1 !important; }
+html.light .hover\:bg-slate-800\/80:hover { background-color: rgba(226,232,240,0.8) !important; }
+
+/* Text hover states in light theme */
+html.light .hover\:text-slate-100:hover { color: #0f172a !important; }
+html.light .hover\:text-slate-200:hover { color: #1e293b !important; }
+html.light .hover\:text-slate-300:hover { color: #334155 !important; }
+
+/* Links and hover-amber overrides stay the same — amber works on both themes */
+
+html.light .text-slate-100 { color: #0f172a !important; }
+html.light .text-slate-200 { color: #1e293b !important; }
+html.light .text-slate-300 { color: #334155 !important; }
+html.light .text-slate-400 { color: #475569 !important; }
+html.light .text-slate-500 { color: #64748b !important; }
+html.light .text-slate-600 { color: #94a3b8 !important; }
+
+html.light .border-slate-800 { border-color: #e2e8f0 !important; }
+html.light .border-slate-800\/60 { border-color: rgba(226,232,240,0.6) !important; }
+html.light .border-slate-700\/50 { border-color: rgba(203,213,225,0.6) !important; }
+html.light .border-slate-800\/opacity-60 { border-color: rgba(226,232,240,0.4) !important; }
+html.light .border-slate-700 { border-color: #cbd5e1 !important; }
+html.light .border-slate-700\/50 { border-color: rgba(203,213,225,0.5) !important; }
+html.light .border-slate-700\/60 { border-color: rgba(203,213,225,0.6) !important; }
+
+html.light input,
+html.light select,
+html.light textarea {
+  color: #0f172a;
+  background-color: #f1f5f9;
+  -webkit-text-fill-color: #0f172a;
+  -webkit-box-shadow: 0 0 0 1000px #f1f5f9 inset;
+}
+html.light input:-webkit-autofill,
+html.light input:-webkit-autofill:hover,
+html.light input:-webkit-autofill:focus,
+html.light input:-webkit-autofill:active,
+html.light textarea:-webkit-autofill,
+html.light textarea:-webkit-autofill:hover,
+html.light textarea:-webkit-autofill:focus,
+html.light select:-webkit-autofill,
+html.light select:-webkit-autofill:hover,
+html.light select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a;
+  -webkit-box-shadow: 0 0 0 1000px #f1f5f9 inset;
+  caret-color: #0f172a;
+}
+/* Globally reduce placeholder opacity to ~30% for subtle, unobtrusive hint text */
+::placeholder {
+  opacity: 0.3;
+}
+html.light .placeholder-slate-600::placeholder,
+html.light .placeholder-slate-700::placeholder {
+  color: #64748b;
+  opacity: 0.35;
+}
+
+@layer utilities {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  70% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+.pulse-ring {
+  animation: pulse-ring 1.6s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.slide-in-right {
+  animation: slide-in-right 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, rgba(148,163,184,0.06) 25%, rgba(148,163,184,0.16) 50%, rgba(148,163,184,0.06) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Android Auto Backup: preserve all local app data across reinstall/migration -->
+    <include domain="sharedpref" path="."/>
+    <include domain="file" path="."/>
+    <include domain="database" path="."/>
+</full-backup-content>

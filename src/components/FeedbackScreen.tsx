@@ -3,7 +3,7 @@ import type { Locale } from '../types';
 import { t } from '../lib/i18n';
 import { ScreenTitle, Card } from './ui';
 
-const CONTACT_EMAIL = 'nvz.technologies@gmail.com';
+const CONTACT_EMAIL = 'technologies.nvz@gmail.com';
 const DEVELOPER_NAME = 'NVZ Technologies';
 
 interface FeedbackScreenProps {

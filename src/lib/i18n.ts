@@ -850,8 +850,8 @@ const en: Dict = {
   requiredField: 'Required field',
   optional: 'optional',
   // Onboarding
-  onboardingWelcome: 'Welcome to My Daily Report',
-  onboardingWelcomeDesc: 'My Daily Report helps you quickly create professional Daily Report PDFs — all offline, right from your device.',
+  onboardingWelcome: 'Welcome to Your Daily Report',
+  onboardingWelcomeDesc: 'Your Daily Report helps you quickly create professional Daily Report PDFs — all offline, right from your device.',
   onboardingEmployee: 'Set Up Your Profile',
   onboardingEmployeeDesc: 'Complete Employee Settings first. Your name, company, and role are automatically included in every report.',
   onboardingWorkSites: 'Add Work Sites',
@@ -888,7 +888,7 @@ const en: Dict = {
   // Privacy Policy
   privacyPolicy: 'Privacy Policy',
   privacyPolicyDesc: 'How your data is handled and protected.',
-  privacyPolicyIntro: 'Your privacy is important to us. Here is how My Daily Report handles your data:',
+  privacyPolicyIntro: 'Your privacy is important to us. Here is how Your Daily Report handles your data:',
   privacyPoint1: 'All data is stored locally on your device. No backend servers are used.',
   privacyPoint2: 'No report content is ever transmitted over the internet.',
   privacyPoint3: 'No account is required. The app works entirely offline.',
@@ -896,7 +896,7 @@ const en: Dict = {
   privacyPoint5: 'Images remain on your device and are never uploaded to any server.',
   privacyPoint6: 'The app requests only the permissions necessary for its functionality — storage for PDF export and image/logo selection.',
   privacyPoint7: 'Premium purchases are handled through Google Play when applicable. No payment information is stored by the app.',
-  privacyPlayStore: 'Full Privacy Policy (Play Store)',
+  privacyPlayStore: 'Full Privacy Policy',
   // Company Logo
   companyLogo: 'Company Logo',
   companyLogoDesc: 'Upload your company logo to display it at the top of every exported PDF.',
@@ -1323,8 +1323,8 @@ const es: Dict = {
   requiredField: 'Campo requerido',
   optional: 'opcional',
   // Onboarding
-  onboardingWelcome: 'Bienvenido a Mi Reporte Diario',
-  onboardingWelcomeDesc: 'Mi Reporte Diario te ayuda a crear rápidamente PDFs profesionales de Reportes Diarios — todo sin conexión, desde tu dispositivo.',
+  onboardingWelcome: 'Bienvenido a Tu Reporte Diario',
+  onboardingWelcomeDesc: 'Tu Reporte Diario te ayuda a crear rápidamente PDFs profesionales de Reportes Diarios — todo sin conexión, desde tu dispositivo.',
   onboardingEmployee: 'Configura Tu Perfil',
   onboardingEmployeeDesc: 'Completa primero los Ajustes de Empleado. Tu nombre, empresa y cargo se incluyen automáticamente en cada reporte.',
   onboardingWorkSites: 'Agrega Sitios de Trabajo',
@@ -1361,7 +1361,7 @@ const es: Dict = {
   // Privacy Policy
   privacyPolicy: 'Política de Privacidad',
   privacyPolicyDesc: 'Cómo se manejan y protegen tus datos.',
-  privacyPolicyIntro: 'Tu privacidad es importante para nosotros. Así es como Mi Reporte Diario maneja tus datos:',
+  privacyPolicyIntro: 'Tu privacidad es importante para nosotros. Así es como Tu Reporte Diario maneja tus datos:',
   privacyPoint1: 'Todos los datos se guardan localmente en tu dispositivo. No se usan servidores backend.',
   privacyPoint2: 'Ningún contenido de reporte se transmite por internet.',
   privacyPoint3: 'No se requiere cuenta. La app funciona completamente sin conexión.',
@@ -1369,7 +1369,7 @@ const es: Dict = {
   privacyPoint5: 'Las imágenes permanecen en tu dispositivo y nunca se suben a ningún servidor.',
   privacyPoint6: 'La app solicita solo los permisos necesarios \u2014 almacenamiento para exportar PDF y seleccionar imágenes/logos.',
   privacyPoint7: 'Las compras Premium se gestionan a través de Google Play cuando aplica. La app no almacena información de pago.',
-  privacyPlayStore: 'Política de Privacidad Completa (Play Store)',
+  privacyPlayStore: 'Política de Privacidad Completa',
   // Company Logo
   companyLogo: 'Logo de Empresa',
   companyLogoDesc: 'Sube el logo de tu empresa para mostrarlo en la parte superior de cada PDF exportado.',

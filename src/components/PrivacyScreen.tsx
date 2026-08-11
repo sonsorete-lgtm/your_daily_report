@@ -1,4 +1,4 @@
-import { Shield, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Shield, CheckCircle2, ExternalLink, Mail, Globe } from 'lucide-react';
 import type { Locale } from '../types';
 import { t } from '../lib/i18n';
 import { ScreenTitle, Card } from './ui';
@@ -7,6 +7,12 @@ interface PrivacyScreenProps {
   locale: Locale;
   onBack: () => void;
 }
+
+const PRIVACY_POLICY_URL = 'https://nvztechnologies.org/legal/your-daily-report-privacy';
+const DEVELOPER_NAME = 'NVZ Technologies';
+const DEVELOPER_WEBSITE = 'https://nvztechnologies.org/';
+const CONTACT_EMAIL = 'technologies.nvz@gmail.com';
+const DEVELOPER_LOCATION = 'Dallas, Texas, United States';
 
 const PRIVACY_POINTS: Parameters<typeof t>[1][] = [
   'privacyPoint1',
@@ -18,10 +24,16 @@ const PRIVACY_POINTS: Parameters<typeof t>[1][] = [
   'privacyPoint7',
 ];
 
-const PLAY_STORE_PRIVACY_URL = 'https://mydailyreport.app/privacy';
-
 export function PrivacyScreen({ locale, onBack }: PrivacyScreenProps) {
   const tr = (k: Parameters<typeof t>[1]) => t(locale, k);
+
+  function openPrivacyPolicy() {
+    window.open(PRIVACY_POLICY_URL, '_blank', 'noopener,noreferrer');
+  }
+
+  function openWebsite() {
+    window.open(DEVELOPER_WEBSITE, '_blank', 'noopener,noreferrer');
+  }
 
   return (
     <div className="pt-6 pb-4">
@@ -46,19 +58,51 @@ export function PrivacyScreen({ locale, onBack }: PrivacyScreenProps) {
         </div>
       </Card>
 
-      <Card>
-        <a
-          href={PLAY_STORE_PRIVACY_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-between gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+      <Card className="mb-4">
+        <button
+          onClick={openPrivacyPolicy}
+          className="flex items-center justify-between gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors w-full text-left"
         >
-          <span>{tr('privacyPlayStore')}</span>
+          <span>{tr('privacyPolicy')}</span>
           <ExternalLink className="w-4 h-4 shrink-0" />
-        </a>
+        </button>
         <p className="text-xs text-slate-600 mt-2">
-          {PLAY_STORE_PRIVACY_URL}
+          {PRIVACY_POLICY_URL}
         </p>
+      </Card>
+
+      <Card>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+            <Shield className="w-6 h-6 text-amber-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-slate-500">{tr('developerName')}</p>
+            <p className="text-sm font-semibold text-slate-100">{DEVELOPER_NAME}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{DEVELOPER_LOCATION}</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs text-slate-500 mb-1">{tr('contactEmail')}</p>
+            <div className="flex items-center gap-2 px-3 h-11 rounded-xl bg-slate-800 border border-slate-700">
+              <Mail className="w-4 h-4 text-slate-500 shrink-0" />
+              <span className="text-sm text-slate-200 flex-1 truncate">{CONTACT_EMAIL}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={openWebsite}
+            className="flex items-center justify-between gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors w-full text-left pt-1"
+          >
+            <span className="flex items-center gap-2">
+              <Globe className="w-4 h-4 shrink-0" />
+              {DEVELOPER_WEBSITE}
+            </span>
+            <ExternalLink className="w-4 h-4 shrink-0" />
+          </button>
+        </div>
       </Card>
     </div>
   );

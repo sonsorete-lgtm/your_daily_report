@@ -1,4 +1,4 @@
-package com.nvztechnologies.yourdailyreport;
+package com.yourdailyreport.myapp;
 
 import com.getcapacitor.BridgeActivity;
 

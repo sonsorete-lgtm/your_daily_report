@@ -244,7 +244,6 @@ async function writeImageGrid(ctx: PdfCtx, images: { dataUrl: string; name: stri
   const cellH = IMG_CELL_H;
 
   let idx = 0;
-  let isFirstImagePage = true;
 
   while (idx < resolved.length) {
     // Always start a fresh page for images — page 1 is text only
@@ -278,7 +277,6 @@ async function writeImageGrid(ctx: PdfCtx, images: { dataUrl: string; name: stri
     }
 
     idx += pageImages.length;
-    isFirstImagePage = false;
   }
 }
 

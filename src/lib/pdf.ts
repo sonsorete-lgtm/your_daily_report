@@ -110,8 +110,11 @@ async function writeLogo(ctx: PdfCtx, logoDataUrl: string): Promise<void> {
   }
 }
 
-const IMAGE_GAP = 8;
-const IMAGE_MAX_H = 150;
+const IMAGE_GAP = 12;
+const IMG_COLS = 2;
+const IMG_ROWS = 3;
+const IMG_MAX_PER_PAGE = IMG_COLS * IMG_ROWS;
+const IMG_CELL_H = 230;
 
 interface ImagePlacement {
   dataUrl: string;
@@ -127,9 +130,6 @@ async function resolveImage(dataUrl: string): Promise<ImagePlacement | null> {
   if (dims.width === 0) return null;
   return { dataUrl, w: dims.width, h: dims.height, format: dims.format };
 }
-
-/** Maximum images per row. */
-const MAX_COLS = 5;
 
 /** Embed a single image at the given position, trying multiple formats. */
 function placeImage(doc: jsPDF, img: ImagePlacement, x: number, y: number, w: number, h: number) {
@@ -232,7 +232,7 @@ function writeTwoColumnHeader(
   ctx.y = Math.max(leftEndY, rightEndY) + 8;
 }
 
-async function writeImageGrid(ctx: PdfCtx, images: { dataUrl: string; name: string }[]) {
+async function writeImageGrid(ctx: PdfCtx, images: { dataUrl: string; name: string }[], title: string) {
   const resolved: ImagePlacement[] = [];
   for (const img of images) {
     const r = await resolveImage(img.dataUrl);
@@ -240,39 +240,45 @@ async function writeImageGrid(ctx: PdfCtx, images: { dataUrl: string; name: stri
   }
   if (resolved.length === 0) return;
 
-  const maxRowH = IMAGE_MAX_H;
+  const cellW = (CONTENT_WIDTH - IMAGE_GAP * (IMG_COLS - 1)) / IMG_COLS;
+  const cellH = IMG_CELL_H;
 
   let idx = 0;
+  let isFirstImagePage = true;
+
   while (idx < resolved.length) {
-    // Collect the images for the current row (up to MAX_COLS)
-    const rowImages: ImagePlacement[] = [];
-    for (let c = 0; c < MAX_COLS && idx < resolved.length; c++) {
-      rowImages.push(resolved[idx++]);
+    // Always start a fresh page for images — page 1 is text only
+    ctx.doc.addPage();
+    ctx.y = MARGIN + 4;
+
+    // Section title at top of each image page
+    writeSectionTitle(ctx, title);
+    const gridTop = ctx.y;
+
+    const pageImages = resolved.slice(idx, idx + IMG_MAX_PER_PAGE);
+
+    for (let i = 0; i < pageImages.length; i++) {
+      const img = pageImages[i];
+      const col = i % IMG_COLS;
+      const row = Math.floor(i / IMG_COLS);
+
+      const cellX = MARGIN + col * (cellW + IMAGE_GAP);
+      const cellY = gridTop + row * (cellH + IMAGE_GAP);
+
+      // Fit image within cell preserving original aspect ratio — no rotation
+      const scale = Math.min(cellW / img.w, cellH / img.h, 1);
+      const w = img.w * scale;
+      const h = img.h * scale;
+
+      // Center within cell
+      const x = cellX + (cellW - w) / 2;
+      const y = cellY + (cellH - h) / 2;
+
+      placeImage(ctx.doc, img, x, y, w, h);
     }
 
-    // Cell width is based on the actual number of images in this row,
-    // so a leftover single image on the last row gets full width.
-    const cols = rowImages.length;
-    const cellW = (CONTENT_WIDTH - IMAGE_GAP * (cols - 1)) / cols;
-
-    // Compute scaled dimensions for each image in the row (fit within cell)
-    const rowCells = rowImages.map((img) => {
-      const scale = Math.min(cellW / img.w, maxRowH / img.h, 1);
-      return { img, w: img.w * scale, h: img.h * scale };
-    });
-
-    // The row height is the tallest image in the row
-    const rowH = Math.max(...rowCells.map((c) => c.h), 0);
-    ensureSpace(ctx, rowH + IMAGE_GAP);
-
-    // Place images left-to-right, vertically bottom-aligned within the row
-    let x = MARGIN;
-    for (const cell of rowCells) {
-      const yOffset = rowH - cell.h; // bottom-align images in the row
-      placeImage(ctx.doc, cell.img, x, ctx.y + yOffset, cell.w, cell.h);
-      x += cell.w + IMAGE_GAP;
-    }
-    ctx.y += rowH + IMAGE_GAP;
+    idx += pageImages.length;
+    isFirstImagePage = false;
   }
 }
 
@@ -407,18 +413,8 @@ export async function buildReportPdfDoc(doc_: ReportDocument): Promise<jsPDF> {
   }
 
   if (doc_.showImages && doc_.images.length > 0) {
-    ctx.y += 10;
-    writeSectionTitle(ctx, doc_.imagesTitle);
-    await writeImageGrid(ctx, doc_.images);
-    ctx.y += 4;
-    const { doc: d } = ctx;
-    d.setFont(FONT_REGULAR, 'italic');
-    d.setFontSize(8.5);
-    d.setTextColor(...MUTED);
-    const summary = doc_.imagesSummaryText;
-    ensureSpace(ctx, 14);
-    d.text(summary, MARGIN, ctx.y);
-    ctx.y += 10;
+    // Images always go on a new page — page 1 is text only
+    await writeImageGrid(ctx, doc_.images, doc_.imagesTitle);
   }
 
   await writeFooter(ctx, doc_);

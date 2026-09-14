@@ -1,5 +1,8 @@
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import type { ReportDocument, FieldRow } from './reportDocument';
 
 const MARGIN = 36;
@@ -424,7 +427,35 @@ export async function buildReportPdfDoc(doc_: ReportDocument): Promise<jsPDF> {
 
 export async function downloadReportPdf(doc_: ReportDocument, filename: string): Promise<void> {
   const doc = await buildReportPdfDoc(doc_);
-  // Sanitize filename — strip problematic characters that could cause save failures
   const safeName = filename.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
+
+  if (Capacitor.isNativePlatform()) {
+    const blob = doc.output('blob') as Blob;
+    const base64Data = await blobToBase64(blob);
+    const savedFile = await Filesystem.writeFile({
+      path: safeName,
+      data: base64Data,
+      directory: Directory.Cache,
+    });
+    await Share.share({
+      title: safeName,
+      url: savedFile.uri,
+    });
+    return;
+  }
+
   doc.save(safeName);
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const commaIdx = result.indexOf(',');
+      resolve(commaIdx >= 0 ? result.slice(commaIdx + 1) : result);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
 }

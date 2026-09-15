@@ -5,6 +5,64 @@ import { t } from '../lib/i18n';
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
+const MAX_IMG_DIM = 1600;
+const JPEG_QUALITY = 0.8;
+
+/**
+ * Compress an image File by drawing it onto a canvas at a capped dimension
+ * and re-encoding as JPEG. Returns a data URL string.
+ * PNGs with transparency are preserved as PNG to avoid losing the alpha channel.
+ */
+function compressImage(file: File): Promise<{ dataUrl: string; mimeType: string }> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const src = reader.result as string;
+      const isPng = file.type === 'image/png';
+
+      const img = new Image();
+      img.onload = () => {
+        let { naturalWidth: w, naturalHeight: h } = img;
+
+        if (w <= MAX_IMG_DIM && h <= MAX_IMG_DIM && isPng) {
+          resolve({ dataUrl: src, mimeType: file.type });
+          return;
+        }
+
+        const scale = Math.min(MAX_IMG_DIM / w, MAX_IMG_DIM / h, 1);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve({ dataUrl: src, mimeType: file.type });
+          return;
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+
+        if (isPng) {
+          try {
+            const pngUrl = canvas.toDataURL('image/png');
+            resolve({ dataUrl: pngUrl, mimeType: 'image/png' });
+          } catch {
+            resolve({ dataUrl: src, mimeType: file.type });
+          }
+        } else {
+          const jpegUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+          resolve({ dataUrl: jpegUrl, mimeType: 'image/jpeg' });
+        }
+      };
+      img.onerror = () => resolve({ dataUrl: src, mimeType: file.type });
+      img.src = src;
+    };
+    reader.onerror = () => resolve({ dataUrl: '', mimeType: file.type });
+    reader.readAsDataURL(file);
+  });
+}
+
 interface PhotoGridProps {
   images: ReportImage[];
   onChange: (images: ReportImage[]) => void;
@@ -18,7 +76,7 @@ interface PhotoGridProps {
  * - Two source buttons: Camera (capture) and Gallery (pick).
  * - Unlimited attachments by default (limited only by device storage).
  * - Preview + remove before submission.
- * - Reads files as data URLs so they round-trip through localStorage.
+ * - Images are compressed (max 1600px, JPEG 80%) to keep PDFs and storage small.
  */
 export function PhotoGrid({
   images,
@@ -36,20 +94,15 @@ export function PhotoGrid({
     const remaining = max === Infinity ? files.length : max - images.length;
     const picked = Array.from(files).slice(0, Math.max(0, remaining));
     const mapped: ReportImage[] = await Promise.all(
-      picked.map(
-        (f) =>
-          new Promise<ReportImage>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () =>
-              resolve({
-                id: uid(),
-                name: f.name,
-                dataUrl: reader.result as string,
-                mimeType: f.type,
-              });
-            reader.readAsDataURL(f);
-          }),
-      ),
+      picked.map(async (f) => {
+        const { dataUrl, mimeType } = await compressImage(f);
+        return {
+          id: uid(),
+          name: f.name,
+          dataUrl,
+          mimeType,
+        };
+      }),
     );
     if (max === Infinity) {
       onChange([...images, ...mapped]);

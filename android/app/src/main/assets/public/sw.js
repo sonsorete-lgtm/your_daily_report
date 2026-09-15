@@ -2,7 +2,7 @@
 // User data is stored in IndexedDB on the device.
 // This SW caches the app shell so the app works fully offline.
 
-const CACHE_NAME = 'my-daily-report-v3';
+const CACHE_NAME = 'my-daily-report-v4';
 const APP_SHELL = [
   '/',
   '/index.html',

@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { Capacitor } from '@capacitor/core';
-import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import type { ReportDocument, FieldRow } from './reportDocument';
 
@@ -429,8 +429,8 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
   const safeName = filename.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
 
   if (Capacitor.isNativePlatform()) {
-    const rawBase64 = doc.output('datauristring') as string;
-    const base64Data = rawBase64.includes(',') ? rawBase64.split(',')[1].trim() : rawBase64.trim();
+    const pdfBlob = doc.output('blob') as Blob;
+    const base64Data = await blobToBase64(pdfBlob);
 
     try {
       await Filesystem.writeFile({
@@ -440,27 +440,12 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
         recursive: true,
       });
 
-      const uriResult = await Filesystem.getUri({
+      const { uri: fileUri } = await Filesystem.getUri({
         directory: Directory.Cache,
         path: safeName,
       });
-      const fileUri = uriResult.uri;
 
-      if (fileUri.startsWith('file:')) {
-        await Share.share({
-          title: 'Share Daily Report',
-          text: 'Attached is the daily report PDF.',
-          files: [fileUri],
-          dialogTitle: 'Save or Share PDF',
-        });
-      } else {
-        await Share.share({
-          title: 'Share Daily Report',
-          text: 'Attached is the daily report PDF.',
-          url: fileUri,
-          dialogTitle: 'Save or Share PDF',
-        });
-      }
+      await sharePdf(fileUri, safeName);
     } catch (err) {
       throw new Error(
         `Failed to export PDF: ${err instanceof Error ? err.message : String(err)}`,
@@ -470,4 +455,60 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
   }
 
   doc.save(safeName);
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const commaIdx = result.indexOf(',');
+      resolve(commaIdx >= 0 ? result.slice(commaIdx + 1) : result);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function sharePdf(fileUri: string, filename: string): Promise<void> {
+  const baseShareOptions = {
+    title: 'Share Daily Report',
+    text: 'Attached is the daily report PDF.',
+    dialogTitle: 'Save or Share PDF',
+  };
+
+  if (fileUri.startsWith('file:')) {
+    try {
+      await Share.share({ ...baseShareOptions, files: [fileUri] });
+      return;
+    } catch (err) {
+      if (isCancelError(err)) return;
+    }
+    try {
+      await Share.share({ ...baseShareOptions, url: fileUri });
+      return;
+    } catch (err) {
+      if (isCancelError(err)) return;
+    }
+  } else if (fileUri.startsWith('content:')) {
+    try {
+      await Share.share({ ...baseShareOptions, url: fileUri });
+      return;
+    } catch (err) {
+      if (isCancelError(err)) return;
+    }
+  }
+
+  await Share.share({
+    ...baseShareOptions,
+    text: `Daily report: ${filename}`,
+  });
+}
+
+function isCancelError(err: unknown): boolean {
+  if (err instanceof Error) {
+    const msg = err.message.toLowerCase();
+    return msg.includes('cancel') || msg.includes('dismissed');
+  }
+  return false;
 }

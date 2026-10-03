@@ -321,8 +321,9 @@ export default function App() {
       const filename = `${folio}.pdf`;
       await downloadReportPdf(doc, filename);
       showToast(t(locale, 'reportSavedPdf'), 'success');
-    } catch {
-      showToast(t(locale, 'reportSaved'), 'success');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      showToast(msg || t(locale, 'reportSaved'), 'info');
     }
     savingRef.current = false;
     goHome();

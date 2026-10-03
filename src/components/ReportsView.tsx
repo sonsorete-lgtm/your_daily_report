@@ -44,8 +44,9 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
       const filename = `${report.reportId ?? report.folio ?? 'report'}.pdf`;
       await downloadReportPdf(doc, filename);
       onNotify(tr('downloadComplete'), 'success');
-    } catch {
-      onNotify(tr('downloadFailed'), 'info');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : tr('downloadFailed');
+      onNotify(msg, 'info');
     } finally {
       setDownloadingId(null);
     }

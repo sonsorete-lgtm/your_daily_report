@@ -428,17 +428,17 @@ function makeSafeName(filename: string): string {
   return filename.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
 }
 
-async function writeToCache(doc: jsPDF, safeName: string): Promise<string> {
+async function writeToDirectory(doc: jsPDF, safeName: string, directory: Directory): Promise<string> {
   const pdfBlob = doc.output('blob') as Blob;
   const base64Data = await blobToBase64(pdfBlob);
   await Filesystem.writeFile({
     path: safeName,
     data: base64Data,
-    directory: Directory.Cache,
+    directory,
     recursive: true,
   });
   const { uri } = await Filesystem.getUri({
-    directory: Directory.Cache,
+    directory,
     path: safeName,
   });
   return uri;
@@ -450,11 +450,10 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
 
   if (Capacitor.isNativePlatform()) {
     try {
-      const fileUri = await writeToCache(doc, safeName);
-      await sharePdf(fileUri, safeName);
+      await writeToDirectory(doc, safeName, Directory.Documents);
     } catch (err) {
       throw new Error(
-        `Failed to export PDF: ${err instanceof Error ? err.message : String(err)}`,
+        `Failed to save PDF: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
     return;
@@ -469,7 +468,7 @@ export async function shareReportPdf(doc_: ReportDocument, filename: string): Pr
 
   if (Capacitor.isNativePlatform()) {
     try {
-      const fileUri = await writeToCache(doc, safeName);
+      const fileUri = await writeToDirectory(doc, safeName, Directory.Cache);
       await sharePdf(fileUri, safeName);
     } catch (err) {
       throw new Error(

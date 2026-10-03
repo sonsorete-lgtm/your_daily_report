@@ -429,32 +429,30 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
   const safeName = filename.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
 
   if (Capacitor.isNativePlatform()) {
-    const blob = doc.output('blob') as Blob;
-    const base64Data = await blobToBase64(blob);
-    const savedFile = await Filesystem.writeFile({
-      path: safeName,
-      data: base64Data,
-      directory: Directory.Cache,
-    });
-    await Share.share({
-      title: safeName,
-      url: savedFile.uri,
-    });
+    const rawBase64 = doc.output('datauristring') as string;
+    const base64Data = rawBase64.includes(',') ? rawBase64.split(',')[1] : rawBase64;
+
+    try {
+      const savedFile = await Filesystem.writeFile({
+        path: safeName,
+        data: base64Data,
+        directory: Directory.Cache,
+        recursive: true,
+      });
+
+      await Share.share({
+        title: 'Share Daily Report',
+        text: 'Attached is the daily report PDF.',
+        url: savedFile.uri,
+        dialogTitle: 'Save or Share PDF',
+      });
+    } catch (err) {
+      throw new Error(
+        `Failed to export PDF: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
     return;
   }
 
   doc.save(safeName);
-}
-
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      const commaIdx = result.indexOf(',');
-      resolve(commaIdx >= 0 ? result.slice(commaIdx + 1) : result);
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
 }

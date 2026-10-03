@@ -28,7 +28,7 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
 
-  const sorted = [...reports].sort((a, b) => (b.submittedAt ?? '').localeCompare(a.submittedAt ?? ''));
+  const sorted = [...(reports ?? [])].sort((a, b) => (b.submittedAt ?? '').localeCompare(a.submittedAt ?? ''));
   const cappedReports = isPremium ? sorted : sorted.slice(0, FREE_REPORT_LIMIT);
   const hiddenCount = sorted.length - cappedReports.length;
   const totalPages = Math.max(1, Math.ceil(cappedReports.length / PAGE_SIZE));
@@ -41,7 +41,7 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
     setDownloadingId(report.id);
     try {
       const doc = buildReportDocument(report, locale);
-      const filename = `${report.reportId ?? report.folio}.pdf`;
+      const filename = `${report.reportId ?? report.folio ?? 'report'}.pdf`;
       await downloadReportPdf(doc, filename);
       onNotify(tr('downloadComplete'), 'success');
     } catch {
@@ -95,7 +95,7 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
       <div className="space-y-3">
         {visibleReports.map((report) => {
           const isOpen = expanded === report.id;
-          const date = formatDateMMDDYYYY(new Date(report.submittedAt));
+          const date = formatDateMMDDYYYY(new Date(report.submittedAt || Date.now()));
           return (
             <Card key={report.id} className="fade-in">
               <button
@@ -122,7 +122,7 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
                     <DetailRow label={tr('company')} value={report.company} />
                     <DetailRow label={tr('jobNumber')} value={report.jobRef} />
                     <DetailRow label={tr('workSite')} value={report.workSiteLabel} />
-                    {report.images.length > 0 && <DetailRow label={tr('photos')} value={`${report.images.length}`} />}
+                    {(report.images?.length ?? 0) > 0 && <DetailRow label={tr('photos')} value={`${report.images.length}`} />}
                   </div>
 
                   <div className="flex items-center gap-2">

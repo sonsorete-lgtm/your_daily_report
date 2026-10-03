@@ -228,7 +228,7 @@ export function generateFinalDraft(input: {
 
   // Content sections + custom fields — interleaved in unified order
   const orderedContent = getOrderedEnabledSections(reportTemplate);
-  const sortedCustom = [...customFields].sort((a, b) => a.order - b.order);
+  const sortedCustom = [...(customFields ?? [])].sort((a, b) => a.order - b.order);
 
   // Build a merged ordered list: each entry is either a section key or a custom field
   type Item = { type: 'section'; key: ReportSectionKey } | { type: 'custom'; cf: CustomField };
@@ -294,6 +294,7 @@ export function buildReport(input: {
   const now = new Date();
   const { employee, workSite, fieldValues, images, folio, reportTemplate, customFields, employeeFieldConfigs, workSiteFieldConfigs, reportFieldConfigs } = input;
 
+  const safeCustomFields = customFields ?? [];
   const sectionValues: Partial<Record<ReportSectionKey, string>> = {};
   for (const key of CONTENT_SECTIONS) {
     if (fieldValues[key] !== undefined) {
@@ -302,7 +303,7 @@ export function buildReport(input: {
   }
 
   const customFieldValues: Record<string, string> = {};
-  for (const cf of customFields) {
+  for (const cf of safeCustomFields) {
     if (fieldValues[cf.id] !== undefined) {
       customFieldValues[cf.id] = fieldValues[cf.id];
     }
@@ -365,7 +366,7 @@ export function buildReport(input: {
     images,
     submittedAt: now.toISOString(),
     reportTemplate,
-    customFields,
+    customFields: safeCustomFields,
     companyLogo: employee.companyLogo ?? null,
   };
 }

@@ -88,6 +88,7 @@ export default function App() {
   const [passcodeInput, setPasscodeInput] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const savingRef = useRef(false);
 
   // Initialize IndexedDB and load all persisted state on mount
   useEffect(() => {
@@ -296,7 +297,9 @@ export default function App() {
   }
 
   async function handlePreviewSave(edits: PreviewEdits, folio: string) {
-    if (!draftSite) return;
+    if (savingRef.current) return;
+    savingRef.current = true;
+    if (!draftSite) { savingRef.current = false; return; }
     const report = buildReport({
       employee: activeEmployee,
       workSite: draftSite,
@@ -321,6 +324,7 @@ export default function App() {
     } catch {
       showToast(t(locale, 'reportSaved'), 'success');
     }
+    savingRef.current = false;
     goHome();
   }
 

@@ -88,7 +88,11 @@ function loadImageDims(dataUrl: string): Promise<{ width: number; height: number
       if (dataUrl.startsWith('data:image/png')) format = 'PNG';
       else if (dataUrl.startsWith('data:image/webp')) format = 'WEBP';
       else if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) format = 'JPEG';
-      resolve({ width: img.naturalWidth, height: img.naturalHeight, format });
+      const result = { width: img.naturalWidth, height: img.naturalHeight, format };
+      img.onload = null;
+      img.onerror = null;
+      img.src = '';
+      resolve(result);
     };
     img.onerror = () => resolve({ width: 0, height: 0, format: 'JPEG' });
     img.src = dataUrl;

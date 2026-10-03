@@ -43,17 +43,20 @@ function compressImage(file: File): Promise<{ dataUrl: string; mimeType: string 
         }
         ctx.drawImage(img, 0, 0, w, h);
 
+        let resultUrl: string;
         if (isPng) {
           try {
-            const pngUrl = canvas.toDataURL('image/png');
-            resolve({ dataUrl: pngUrl, mimeType: 'image/png' });
+            resultUrl = canvas.toDataURL('image/png');
           } catch {
-            resolve({ dataUrl: src, mimeType: file.type });
+            resultUrl = src;
           }
         } else {
-          const jpegUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
-          resolve({ dataUrl: jpegUrl, mimeType: 'image/jpeg' });
+          resultUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
         }
+        // Release canvas memory immediately
+        canvas.width = 0;
+        canvas.height = 0;
+        resolve({ dataUrl: resultUrl, mimeType: isPng ? 'image/png' : 'image/jpeg' });
       };
       img.onerror = () => resolve({ dataUrl: src, mimeType: file.type });
       img.src = src;
@@ -88,12 +91,14 @@ export function PhotoGrid({
   const galleryLabel = t(locale, 'gallery');
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
+  const processingRef = useRef(false);
 
   async function onPick(files: FileList | null) {
-    if (!files) return;
-    const remaining = max === Infinity ? files.length : max - images.length;
-    const picked = Array.from(files).slice(0, Math.max(0, remaining));
+    if (!files || processingRef.current) return;
+    processingRef.current = true;
     try {
+      const remaining = max === Infinity ? files.length : max - images.length;
+      const picked = Array.from(files).slice(0, Math.max(0, remaining));
       const mapped: ReportImage[] = await Promise.all(
         picked.map(async (f) => {
           const { dataUrl, mimeType } = await compressImage(f);
@@ -114,6 +119,8 @@ export function PhotoGrid({
       }
     } catch {
       // Camera/gallery permission denied, file read error, or canvas tainted
+    } finally {
+      processingRef.current = false;
     }
   }
 

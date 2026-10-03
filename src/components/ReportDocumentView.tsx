@@ -16,10 +16,10 @@ export function ReportDocumentView({ doc, locale, folio, dateStr, title }: Repor
   const tr = (k: Parameters<typeof t>[1]) => t(locale, k);
   const [enlarged, setEnlarged] = useState<string | null>(null);
 
-  const empSection = doc.sections.find((s) => s.title === tr('employeeInformation'));
-  const siteSection = doc.sections.find((s) => s.title === tr('workSiteInformation'));
+  const empSection = (doc.sections ?? []).find((s) => s.title === tr('employeeInformation'));
+  const siteSection = (doc.sections ?? []).find((s) => s.title === tr('workSiteInformation'));
   const imagesTitle = tr('imagesOfWork');
-  const contentSections = doc.sections.filter(
+  const contentSections = (doc.sections ?? []).filter(
     (s) => s !== empSection && s !== siteSection && s.title !== imagesTitle
   );
 
@@ -122,7 +122,7 @@ export function ReportDocumentView({ doc, locale, folio, dateStr, title }: Repor
         )}
 
         {/* Images section */}
-        {doc.showImages && doc.images.length > 0 && (
+        {doc.showImages && (doc.images?.length ?? 0) > 0 && (
           <section>
             <div className="flex items-center gap-1.5 mb-2">
               <ImageIcon className="w-3.5 h-3.5 text-amber-600" />
@@ -131,7 +131,7 @@ export function ReportDocumentView({ doc, locale, folio, dateStr, title }: Repor
             {doc.images.length > 0 ? (
               <div className="pl-5 space-y-2">
                 <div className="grid grid-cols-2 gap-2.5">
-                  {doc.images.map((img, i) => (
+                  {(doc.images ?? []).map((img, i) => (
                     <button
                       key={i}
                       onClick={() => img.dataUrl && setEnlarged(img.dataUrl)}

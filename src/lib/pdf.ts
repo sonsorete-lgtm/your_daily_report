@@ -430,20 +430,31 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
 
   if (Capacitor.isNativePlatform()) {
     const rawBase64 = doc.output('datauristring') as string;
-    const base64Data = rawBase64.includes(',') ? rawBase64.split(',')[1] : rawBase64;
+    const base64Data = rawBase64.includes(',') ? rawBase64.split(',')[1].trim() : rawBase64.trim();
 
     try {
-      const savedFile = await Filesystem.writeFile({
+      const writeResult = await Filesystem.writeFile({
         path: safeName,
         data: base64Data,
         directory: Directory.Cache,
         recursive: true,
       });
 
+      let fileUri = writeResult.uri;
+      try {
+        const uriResult = await Filesystem.getUri({
+          directory: Directory.Cache,
+          path: safeName,
+        });
+        fileUri = uriResult.uri;
+      } catch {
+        // fall back to the URI from writeFile
+      }
+
       await Share.share({
         title: 'Share Daily Report',
         text: 'Attached is the daily report PDF.',
-        url: savedFile.uri,
+        url: fileUri,
         dialogTitle: 'Save or Share PDF',
       });
     } catch (err) {

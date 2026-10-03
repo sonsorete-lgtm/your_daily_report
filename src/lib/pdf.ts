@@ -429,22 +429,17 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
   const safeName = filename.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
 
   if (Capacitor.isNativePlatform()) {
-    try {
-      const blob = doc.output('blob') as Blob;
-      const base64Data = await blobToBase64(blob);
-      const savedFile = await Filesystem.writeFile({
-        path: safeName,
-        data: base64Data,
-        directory: Directory.Cache,
-      });
-      await Share.share({
-        title: safeName,
-        url: savedFile.uri,
-      });
-    } catch {
-      // Fallback to in-browser save if native sharing fails
-      doc.save(safeName);
-    }
+    const blob = doc.output('blob') as Blob;
+    const base64Data = await blobToBase64(blob);
+    const savedFile = await Filesystem.writeFile({
+      path: safeName,
+      data: base64Data,
+      directory: Directory.Cache,
+    });
+    await Share.share({
+      title: safeName,
+      url: savedFile.uri,
+    });
     return;
   }
 

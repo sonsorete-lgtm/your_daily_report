@@ -180,7 +180,6 @@ export type TranslationKey =
   | 'shareReport'
   | 'shareComplete'
   | 'shareFailed'
-  | 'preparingShare'
   | 'saveReport'
   | 'reportSaved'
   | 'savingReport'
@@ -691,7 +690,6 @@ const en: Dict = {
   shareReport: 'Share',
   shareComplete: 'Share sheet opened successfully.',
   shareFailed: 'Share failed. Please try again.',
-  preparingShare: 'Preparing to share\u2026',
   saveReport: 'Save Report',
   reportSaved: 'Report saved locally.',
   savingReport: 'Saving report\u2026',
@@ -1169,7 +1167,6 @@ const es: Dict = {
   shareReport: 'Compartir',
   shareComplete: 'Hoja de compartir abierta exitosamente.',
   shareFailed: 'Error al compartir. Inténtalo de nuevo.',
-  preparingShare: 'Preparando para compartir\u2026',
   saveReport: 'Guardar Reporte',
   reportSaved: 'Reporte guardado localmente.',
   savingReport: 'Guardando reporte\u2026',

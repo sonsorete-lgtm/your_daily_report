@@ -59,6 +59,7 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
       const doc = buildReportDocument(report, locale);
       const filename = `${report.reportId ?? report.folio ?? 'report'}.pdf`;
       await shareReportPdf(doc, filename);
+      onNotify(tr('shareComplete'), 'success');
     } catch (err) {
       if (err instanceof Error && (err.message.toLowerCase().includes('cancel') || err.message.toLowerCase().includes('dismissed'))) {
         return;

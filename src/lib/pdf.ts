@@ -433,30 +433,34 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
     const base64Data = rawBase64.includes(',') ? rawBase64.split(',')[1].trim() : rawBase64.trim();
 
     try {
-      const writeResult = await Filesystem.writeFile({
+      await Filesystem.writeFile({
         path: safeName,
         data: base64Data,
         directory: Directory.Cache,
         recursive: true,
       });
 
-      let fileUri = writeResult.uri;
-      try {
-        const uriResult = await Filesystem.getUri({
-          directory: Directory.Cache,
-          path: safeName,
-        });
-        fileUri = uriResult.uri;
-      } catch {
-        // fall back to the URI from writeFile
-      }
-
-      await Share.share({
-        title: 'Share Daily Report',
-        text: 'Attached is the daily report PDF.',
-        url: fileUri,
-        dialogTitle: 'Save or Share PDF',
+      const uriResult = await Filesystem.getUri({
+        directory: Directory.Cache,
+        path: safeName,
       });
+      const fileUri = uriResult.uri;
+
+      if (fileUri.startsWith('file:')) {
+        await Share.share({
+          title: 'Share Daily Report',
+          text: 'Attached is the daily report PDF.',
+          files: [fileUri],
+          dialogTitle: 'Save or Share PDF',
+        });
+      } else {
+        await Share.share({
+          title: 'Share Daily Report',
+          text: 'Attached is the daily report PDF.',
+          url: fileUri,
+          dialogTitle: 'Save or Share PDF',
+        });
+      }
     } catch (err) {
       throw new Error(
         `Failed to export PDF: ${err instanceof Error ? err.message : String(err)}`,

@@ -93,23 +93,27 @@ export function PhotoGrid({
     if (!files) return;
     const remaining = max === Infinity ? files.length : max - images.length;
     const picked = Array.from(files).slice(0, Math.max(0, remaining));
-    const mapped: ReportImage[] = await Promise.all(
-      picked.map(async (f) => {
-        const { dataUrl, mimeType } = await compressImage(f);
-        return {
-          id: uid(),
-          name: f.name,
-          dataUrl,
-          mimeType,
-        };
-      }),
-    );
-    const valid = mapped.filter((img) => img.dataUrl);
-    if (valid.length === 0) return;
-    if (max === Infinity) {
-      onChange([...images, ...valid]);
-    } else {
-      onChange([...images, ...valid].slice(0, max));
+    try {
+      const mapped: ReportImage[] = await Promise.all(
+        picked.map(async (f) => {
+          const { dataUrl, mimeType } = await compressImage(f);
+          return {
+            id: uid(),
+            name: f.name,
+            dataUrl,
+            mimeType,
+          };
+        }),
+      );
+      const valid = mapped.filter((img) => img.dataUrl);
+      if (valid.length === 0) return;
+      if (max === Infinity) {
+        onChange([...images, ...valid]);
+      } else {
+        onChange([...images, ...valid].slice(0, max));
+      }
+    } catch {
+      // Camera/gallery permission denied, file read error, or canvas tainted
     }
   }
 

@@ -11,7 +11,7 @@ import type {
   Theme,
 } from '../types';
 import { SEED_WORK_SITES } from '../data/sites';
-import { idbGet, idbSet, idbDelete } from './idb';
+import { idbGet, idbSet, idbDelete, StorageQuotaError } from './idb';
 
 const KEYS = {
   profile: 'ydr-employee',
@@ -164,7 +164,9 @@ export async function initStorage(): Promise<void> {
   }
 }
 
-async function persist<T>(key: string, value: T | null): Promise<boolean> {
+export type PersistResult = 'ok' | 'quota' | 'error';
+
+async function persist<T>(key: string, value: T | null): Promise<PersistResult> {
   try {
     if (value === null) {
       cache.delete(key);
@@ -173,9 +175,10 @@ async function persist<T>(key: string, value: T | null): Promise<boolean> {
       cache.set(key, value);
       await idbSet(key, value);
     }
-    return true;
-  } catch {
-    return false;
+    return 'ok';
+  } catch (err) {
+    if (err instanceof StorageQuotaError) return 'quota';
+    return 'error';
   }
 }
 
@@ -211,7 +214,7 @@ export const storage = {
       customFieldValues: {},
     });
   },
-  async setProfile(p: EmployeeProfile): Promise<boolean> {
+  async setProfile(p: EmployeeProfile): Promise<PersistResult> {
     return persist(KEYS.profile, p);
   },
 
@@ -223,18 +226,18 @@ export const storage = {
     const single = readCache<EmployeeProfile | null>(KEYS.profile, null);
     if (single && (single.name || single.company)) {
       const migrated: EmployeeProfile[] = [{ ...single }];
-      persist(KEYS.profiles, migrated);
+      void persist(KEYS.profiles, migrated);
       return migrated;
     }
     return [];
   },
-  async setProfiles(profiles: EmployeeProfile[]): Promise<boolean> {
+  async setProfiles(profiles: EmployeeProfile[]): Promise<PersistResult> {
     return persist(KEYS.profiles, profiles);
   },
   getSelectedProfileId(): string | null {
     return readCache<string | null>(KEYS.selectedProfileId, null);
   },
-  async setSelectedProfileId(id: string | null): Promise<boolean> {
+  async setSelectedProfileId(id: string | null): Promise<PersistResult> {
     return persist(KEYS.selectedProfileId, id);
   },
 
@@ -243,7 +246,7 @@ export const storage = {
     const stored = readCache<WorkSite[] | null>(KEYS.workSites, null);
     return stored ?? SEED_WORK_SITES;
   },
-  async setWorkSites(s: WorkSite[]): Promise<boolean> {
+  async setWorkSites(s: WorkSite[]): Promise<PersistResult> {
     return persist(KEYS.workSites, s);
   },
 
@@ -251,7 +254,7 @@ export const storage = {
   getReports(): ShiftReport[] {
     return readCache<ShiftReport[]>(KEYS.reports, []);
   },
-  async setReports(r: ShiftReport[]): Promise<boolean> {
+  async setReports(r: ShiftReport[]): Promise<PersistResult> {
     return persist(KEYS.reports, r);
   },
 
@@ -260,7 +263,7 @@ export const storage = {
     const v = cache.get(KEYS.locale);
     return v === 'en' || v === 'es' ? (v as Locale) : null;
   },
-  async setLocale(l: Locale): Promise<boolean> {
+  async setLocale(l: Locale): Promise<PersistResult> {
     return persist(KEYS.locale, l);
   },
 
@@ -268,7 +271,7 @@ export const storage = {
   isOnboarded(): boolean {
     return cache.get(KEYS.onboarded) === true || readOnboardedFallback();
   },
-  async setOnboarded(): Promise<boolean> {
+  async setOnboarded(): Promise<PersistResult> {
     writeOnboardedFallback();
     return persist(KEYS.onboarded, true);
   },
@@ -277,10 +280,10 @@ export const storage = {
   getDraft(): ReportDraft | null {
     return readCache<ReportDraft | null>(KEYS.draft, null);
   },
-  async setDraft(d: ReportDraft | null): Promise<boolean> {
+  async setDraft(d: ReportDraft | null): Promise<PersistResult> {
     return persist(KEYS.draft, d);
   },
-  async clearDraft(): Promise<boolean> {
+  async clearDraft(): Promise<PersistResult> {
     return persist(KEYS.draft, null);
   },
 
@@ -288,7 +291,7 @@ export const storage = {
   getReportTemplate(): ReportTemplate | null {
     return readCache<ReportTemplate | null>(KEYS.reportTemplate, null);
   },
-  async setReportTemplate(template: ReportTemplate | null): Promise<boolean> {
+  async setReportTemplate(template: ReportTemplate | null): Promise<PersistResult> {
     return persist(KEYS.reportTemplate, template);
   },
 
@@ -296,7 +299,7 @@ export const storage = {
   getSectionOrder(): string[] | null {
     return readCache<string[] | null>(KEYS.sectionOrder, null);
   },
-  async setSectionOrder(order: string[] | null): Promise<boolean> {
+  async setSectionOrder(order: string[] | null): Promise<PersistResult> {
     return persist(KEYS.sectionOrder, order);
   },
 
@@ -304,7 +307,7 @@ export const storage = {
   getCustomFields(): CustomField[] {
     return readCache<CustomField[]>(KEYS.customFields, []);
   },
-  async setCustomFields(fields: CustomField[]): Promise<boolean> {
+  async setCustomFields(fields: CustomField[]): Promise<PersistResult> {
     return persist(KEYS.customFields, fields);
   },
 
@@ -312,7 +315,7 @@ export const storage = {
   getLicense(): LicenseState {
     return readCache<LicenseState>(KEYS.license, { tier: 'free', purchasedAt: null });
   },
-  async setLicense(license: LicenseState): Promise<boolean> {
+  async setLicense(license: LicenseState): Promise<PersistResult> {
     return persist(KEYS.license, license);
   },
 
@@ -321,7 +324,7 @@ export const storage = {
     const v = cache.get(KEYS.theme);
     return v === 'light' || v === 'dark' ? (v as Theme) : 'dark';
   },
-  async setTheme(theme: Theme): Promise<boolean> {
+  async setTheme(theme: Theme): Promise<PersistResult> {
     return persist(KEYS.theme, theme);
   },
 
@@ -329,7 +332,7 @@ export const storage = {
   getFolioCounter(): number {
     return readCache<number>(KEYS.folioCounter, 0);
   },
-  async setFolioCounter(n: number): Promise<boolean> {
+  async setFolioCounter(n: number): Promise<PersistResult> {
     return persist(KEYS.folioCounter, n);
   },
 
@@ -337,19 +340,19 @@ export const storage = {
   getEmployeeFieldConfigs(): FieldConfig[] | null {
     return readCache<FieldConfig[] | null>(KEYS.employeeFieldConfigs, null);
   },
-  async setEmployeeFieldConfigs(configs: FieldConfig[] | null): Promise<boolean> {
+  async setEmployeeFieldConfigs(configs: FieldConfig[] | null): Promise<PersistResult> {
     return persist(KEYS.employeeFieldConfigs, configs);
   },
   getWorkSiteFieldConfigs(): FieldConfig[] | null {
     return readCache<FieldConfig[] | null>(KEYS.workSiteFieldConfigs, null);
   },
-  async setWorkSiteFieldConfigs(configs: FieldConfig[] | null): Promise<boolean> {
+  async setWorkSiteFieldConfigs(configs: FieldConfig[] | null): Promise<PersistResult> {
     return persist(KEYS.workSiteFieldConfigs, configs);
   },
   getReportFieldConfigs(): FieldConfig[] | null {
     return readCache<FieldConfig[] | null>(KEYS.reportFieldConfigs, null);
   },
-  async setReportFieldConfigs(configs: FieldConfig[] | null): Promise<boolean> {
+  async setReportFieldConfigs(configs: FieldConfig[] | null): Promise<PersistResult> {
     return persist(KEYS.reportFieldConfigs, configs);
   },
 
@@ -357,19 +360,19 @@ export const storage = {
   getView(): string | null {
     return readCache<string | null>(KEYS.view, null);
   },
-  async setView(v: string | null): Promise<boolean> {
+  async setView(v: string | null): Promise<PersistResult> {
     return persist(KEYS.view, v);
   },
   getViewHistory(): string[] {
     return readCache<string[]>(KEYS.viewHistory, []);
   },
-  async setViewHistory(h: string[]): Promise<boolean> {
+  async setViewHistory(h: string[]): Promise<PersistResult> {
     return persist(KEYS.viewHistory, h);
   },
   getSelectedSiteId(): string | null {
     return readCache<string | null>(KEYS.selectedSiteId, null);
   },
-  async setSelectedSiteId(id: string | null): Promise<boolean> {
+  async setSelectedSiteId(id: string | null): Promise<PersistResult> {
     return persist(KEYS.selectedSiteId, id);
   },
 
@@ -377,7 +380,7 @@ export const storage = {
   getReportFormValues(): Record<string, string> | null {
     return readCache<Record<string, string> | null>(KEYS.reportFormValues, null);
   },
-  async setReportFormValues(v: Record<string, string> | null): Promise<boolean> {
+  async setReportFormValues(v: Record<string, string> | null): Promise<PersistResult> {
     return persist(KEYS.reportFormValues, v);
   },
 };

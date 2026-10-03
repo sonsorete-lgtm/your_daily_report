@@ -47,6 +47,23 @@ export async function idbGet<T>(key: string): Promise<T | undefined> {
   });
 }
 
+export class StorageQuotaError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'StorageQuotaError';
+  }
+}
+
+function isQuotaError(err: unknown): boolean {
+  if (err instanceof DOMException) {
+    return err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED';
+  }
+  if (err instanceof Error) {
+    return err.name === 'QuotaExceededError' || err.message.includes('quota');
+  }
+  return false;
+}
+
 export async function idbSet<T>(key: string, value: T): Promise<void> {
   try {
     const db = await openDB();
@@ -56,16 +73,22 @@ export async function idbSet<T>(key: string, value: T): Promise<void> {
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
-  } catch {
+  } catch (err) {
+    if (isQuotaError(err)) throw new StorageQuotaError('Storage quota exceeded');
     // Connection may be stale — reset and retry once
     dbPromise = null;
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).put(value, key);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
+    try {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).put(value, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (retryErr) {
+      if (isQuotaError(retryErr)) throw new StorageQuotaError('Storage quota exceeded');
+      throw retryErr;
+    }
   }
 }
 

@@ -399,6 +399,7 @@ export type TranslationKey =
   | 'reportLoadError'
   | 'lockedFeatureDesc'
   | 'saveFailed'
+  | 'storageFull'
   | 'helpSupport'
   | 'superAdmin'
   | 'superAdminDesc'
@@ -744,6 +745,7 @@ const en: Dict = {
   reportLoadError: 'Could not load this report. It may be corrupted or incomplete.',
   lockedFeatureDesc: 'Upgrade to Premium to customize fields, order, and visibility.',
   saveFailed: 'Failed to save. Please try again.',
+  storageFull: 'Storage is full. Please delete old reports or photos to free up space.',
   helpSupport: 'Help & Support',
   superAdmin: 'Super Admin',
   superAdminDesc: 'Development testing only',
@@ -1217,6 +1219,7 @@ const es: Dict = {
   reportLoadError: 'No se pudo cargar este reporte. Puede estar dañado o incompleto.',
   lockedFeatureDesc: 'Actualiza a Premium para personalizar campos, orden y visibilidad.',
   saveFailed: 'Error al guardar. Inténtalo de nuevo.',
+  storageFull: 'El almacenamiento está lleno. Elimina reportes o fotos antiguos para liberar espacio.',
   helpSupport: 'Ayuda y Soporte',
   superAdmin: 'Super Admin',
   superAdminDesc: 'Solo para pruebas de desarrollo',

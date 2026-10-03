@@ -157,14 +157,16 @@ export default function App() {
   // Persist state changes — surface failures via toast
   useEffect(() => {
     if (!ready || !employee) return;
-    storage.setProfile(employee).then((ok) => {
-      if (!ok) showToast(t(locale, 'saveFailed'), 'info');
+    storage.setProfile(employee).then((r) => {
+      if (r === 'quota') showToast(t(locale, 'storageFull'), 'info');
+      else if (r === 'error') showToast(t(locale, 'saveFailed'), 'info');
     });
   }, [employee, ready]);
   useEffect(() => {
     if (!ready) return;
-    storage.setProfiles(profiles).then((ok) => {
-      if (!ok) showToast(t(locale, 'saveFailed'), 'info');
+    storage.setProfiles(profiles).then((r) => {
+      if (r === 'quota') showToast(t(locale, 'storageFull'), 'info');
+      else if (r === 'error') showToast(t(locale, 'saveFailed'), 'info');
     });
   }, [profiles, ready]);
   useEffect(() => {
@@ -173,14 +175,16 @@ export default function App() {
   }, [selectedProfileId, ready]);
   useEffect(() => {
     if (!ready) return;
-    storage.setWorkSites(workSites).then((ok) => {
-      if (!ok) showToast(t(locale, 'saveFailed'), 'info');
+    storage.setWorkSites(workSites).then((r) => {
+      if (r === 'quota') showToast(t(locale, 'storageFull'), 'info');
+      else if (r === 'error') showToast(t(locale, 'saveFailed'), 'info');
     });
   }, [workSites, ready]);
   useEffect(() => {
     if (!ready) return;
-    storage.setReports(reports).then((ok) => {
-      if (!ok) showToast(t(locale, 'saveFailed'), 'info');
+    storage.setReports(reports).then((r) => {
+      if (r === 'quota') showToast(t(locale, 'storageFull'), 'info');
+      else if (r === 'error') showToast(t(locale, 'saveFailed'), 'info');
     });
   }, [reports, ready]);
   useEffect(() => { if (ready) storage.setLocale(locale); }, [locale, ready]);

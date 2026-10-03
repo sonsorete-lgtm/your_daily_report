@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Download, Trash2, ChevronDown, FileText, Hash, Eye, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, Trash2, ChevronDown, FileText, Hash, Eye, Lock, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import type { ShiftReport, Locale } from '../types';
 import { t } from '../lib/i18n';
 import { buildReportDocument } from '../lib/reportDocument';
-import { downloadReportPdf } from '../lib/pdf';
+import { downloadReportPdf, shareReportPdf } from '../lib/pdf';
 import { Card, ConfirmDialog, formatDateMMDDYYYY, ScreenTitle } from './ui';
 import { ReportViewScreen } from './ReportViewScreen';
 
@@ -24,6 +24,7 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
   const tr = (k: Parameters<typeof t>[1]) => t(locale, k);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
   const [viewingReport, setViewingReport] = useState<ShiftReport | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
@@ -49,6 +50,23 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
       onNotify(msg, 'info');
     } finally {
       setDownloadingId(null);
+    }
+  }
+
+  async function handleShare(report: ShiftReport) {
+    setSharingId(report.id);
+    try {
+      const doc = buildReportDocument(report, locale);
+      const filename = `${report.reportId ?? report.folio ?? 'report'}.pdf`;
+      await shareReportPdf(doc, filename);
+    } catch (err) {
+      if (err instanceof Error && (err.message.toLowerCase().includes('cancel') || err.message.toLowerCase().includes('dismissed'))) {
+        return;
+      }
+      const msg = err instanceof Error ? err.message : tr('shareFailed');
+      onNotify(msg, 'info');
+    } finally {
+      setSharingId(null);
     }
   }
 
@@ -136,11 +154,19 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
                     </button>
                     <button
                       onClick={() => handleDownload(report)}
-                      disabled={downloadingId === report.id}
+                      disabled={downloadingId === report.id || sharingId === report.id}
                       className="h-10 px-3 shrink-0 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-slate-700 transition-colors disabled:opacity-50"
                     >
                       <Download className="w-4 h-4 shrink-0" />
                       <span className="truncate">{downloadingId === report.id ? tr('preparingReport') : tr('downloadPdf')}</span>
+                    </button>
+                    <button
+                      onClick={() => handleShare(report)}
+                      disabled={sharingId === report.id || downloadingId === report.id}
+                      className="h-10 w-10 shrink-0 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm font-medium flex items-center justify-center hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+                      aria-label={tr('shareReport')}
+                    >
+                      <Share2 className="w-4 h-4" />
                     </button>
                     {isPremium ? (
                       <button

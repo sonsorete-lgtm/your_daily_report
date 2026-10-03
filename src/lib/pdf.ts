@@ -424,27 +424,33 @@ export async function buildReportPdfDoc(doc_: ReportDocument): Promise<jsPDF> {
   return doc;
 }
 
+function makeSafeName(filename: string): string {
+  return filename.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
+}
+
+async function writeToCache(doc: jsPDF, safeName: string): Promise<string> {
+  const pdfBlob = doc.output('blob') as Blob;
+  const base64Data = await blobToBase64(pdfBlob);
+  await Filesystem.writeFile({
+    path: safeName,
+    data: base64Data,
+    directory: Directory.Cache,
+    recursive: true,
+  });
+  const { uri } = await Filesystem.getUri({
+    directory: Directory.Cache,
+    path: safeName,
+  });
+  return uri;
+}
+
 export async function downloadReportPdf(doc_: ReportDocument, filename: string): Promise<void> {
   const doc = await buildReportPdfDoc(doc_);
-  const safeName = filename.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
+  const safeName = makeSafeName(filename);
 
   if (Capacitor.isNativePlatform()) {
-    const pdfBlob = doc.output('blob') as Blob;
-    const base64Data = await blobToBase64(pdfBlob);
-
     try {
-      await Filesystem.writeFile({
-        path: safeName,
-        data: base64Data,
-        directory: Directory.Cache,
-        recursive: true,
-      });
-
-      const { uri: fileUri } = await Filesystem.getUri({
-        directory: Directory.Cache,
-        path: safeName,
-      });
-
+      const fileUri = await writeToCache(doc, safeName);
       await sharePdf(fileUri, safeName);
     } catch (err) {
       throw new Error(
@@ -455,6 +461,33 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
   }
 
   doc.save(safeName);
+}
+
+export async function shareReportPdf(doc_: ReportDocument, filename: string): Promise<void> {
+  const doc = await buildReportPdfDoc(doc_);
+  const safeName = makeSafeName(filename);
+
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const fileUri = await writeToCache(doc, safeName);
+      await sharePdf(fileUri, safeName);
+    } catch (err) {
+      throw new Error(
+        `Failed to share PDF: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+    return;
+  }
+
+  const blob = doc.output('blob') as Blob;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = safeName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function blobToBase64(blob: Blob): Promise<string> {

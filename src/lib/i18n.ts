@@ -177,6 +177,10 @@ export type TranslationKey =
   | 'downloadComplete'
   | 'downloadFailed'
   | 'preparingReport'
+  | 'shareReport'
+  | 'shareComplete'
+  | 'shareFailed'
+  | 'preparingShare'
   | 'saveReport'
   | 'reportSaved'
   | 'savingReport'
@@ -684,6 +688,10 @@ const en: Dict = {
   downloadComplete: 'PDF downloaded successfully.',
   downloadFailed: 'Download failed. Please try again.',
   preparingReport: 'Preparing report\u2026',
+  shareReport: 'Share',
+  shareComplete: 'Share sheet opened successfully.',
+  shareFailed: 'Share failed. Please try again.',
+  preparingShare: 'Preparing to share\u2026',
   saveReport: 'Save Report',
   reportSaved: 'Report saved locally.',
   savingReport: 'Saving report\u2026',
@@ -1158,6 +1166,10 @@ const es: Dict = {
   downloadComplete: 'PDF descargado exitosamente.',
   downloadFailed: 'Descarga fallida. Inténtalo de nuevo.',
   preparingReport: 'Preparando reporte\u2026',
+  shareReport: 'Compartir',
+  shareComplete: 'Hoja de compartir abierta exitosamente.',
+  shareFailed: 'Error al compartir. Inténtalo de nuevo.',
+  preparingShare: 'Preparando para compartir\u2026',
   saveReport: 'Guardar Reporte',
   reportSaved: 'Reporte guardado localmente.',
   savingReport: 'Guardando reporte\u2026',

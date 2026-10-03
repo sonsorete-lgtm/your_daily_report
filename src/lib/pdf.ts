@@ -25,6 +25,7 @@ const FOOTER_PADDING = 10; // bottom margin from page edge to footer content
 interface PdfCtx {
   doc: jsPDF;
   y: number;
+  pageBottom: number;
 }
 
 function ensureSpace(ctx: PdfCtx, needed: number) {
@@ -361,7 +362,7 @@ async function writeFooter(ctx: PdfCtx, doc_: ReportDocument) {
 
 export async function buildReportPdfDoc(doc_: ReportDocument): Promise<jsPDF> {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-  const ctx: PdfCtx = { doc, y: MARGIN + 4 };
+  const ctx: PdfCtx = { doc, y: MARGIN + 4, pageBottom: PAGE_HEIGHT - MARGIN - QR_SIZE - FOOTER_PADDING - 16 };
 
   // Company logo at top
   if (doc_.companyLogo) {
@@ -424,17 +425,22 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
   const safeName = filename.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
 
   if (Capacitor.isNativePlatform()) {
-    const blob = doc.output('blob') as Blob;
-    const base64Data = await blobToBase64(blob);
-    const savedFile = await Filesystem.writeFile({
-      path: safeName,
-      data: base64Data,
-      directory: Directory.Cache,
-    });
-    await Share.share({
-      title: safeName,
-      url: savedFile.uri,
-    });
+    try {
+      const blob = doc.output('blob') as Blob;
+      const base64Data = await blobToBase64(blob);
+      const savedFile = await Filesystem.writeFile({
+        path: safeName,
+        data: base64Data,
+        directory: Directory.Cache,
+      });
+      await Share.share({
+        title: safeName,
+        url: savedFile.uri,
+      });
+    } catch {
+      // Fallback to in-browser save if native sharing fails
+      doc.save(safeName);
+    }
     return;
   }
 

@@ -83,7 +83,6 @@ export default function App() {
   const [toastVisible, setToastVisible] = useState(false);
   const toastIdRef = useRef(0);
   const toastTimerRef = useRef<number | null>(null);
-  const skipNextSave = useRef(true);
   const [premium, setPremium] = useState(false);
   const [showAdminPasscode, setShowAdminPasscode] = useState(false);
   const [passcodeInput, setPasscodeInput] = useState('');

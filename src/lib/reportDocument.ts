@@ -27,6 +27,7 @@ export interface ReportDocument {
   noImagesText: string;
   reportTitle: string;
   folioLabel: string;
+  reportIdLabel: string;
   pageLabel: string;
   ofLabel: string;
   companyLogo: string | null;

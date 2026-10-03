@@ -28,7 +28,7 @@ export function ReportsView({ locale, reports, isPremium, onUpgrade, onDelete, o
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
 
-  const sorted = [...reports].sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+  const sorted = [...reports].sort((a, b) => (b.submittedAt ?? '').localeCompare(a.submittedAt ?? ''));
   const cappedReports = isPremium ? sorted : sorted.slice(0, FREE_REPORT_LIMIT);
   const hiddenCount = sorted.length - cappedReports.length;
   const totalPages = Math.max(1, Math.ceil(cappedReports.length / PAGE_SIZE));

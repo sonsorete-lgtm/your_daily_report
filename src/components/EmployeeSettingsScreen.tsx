@@ -344,8 +344,30 @@ function ProfileEditor({
     }
     const reader = new FileReader();
     reader.onload = () => {
-      const dataUrl = reader.result as string;
-      update({ companyLogo: dataUrl });
+      const src = reader.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const MAX_LOGO_DIM = 400;
+        let { naturalWidth: w, naturalHeight: h } = img;
+        const scale = Math.min(MAX_LOGO_DIM / w, MAX_LOGO_DIM / h, 1);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { update({ companyLogo: src }); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        const isPng = file.type === 'image/png';
+        try {
+          const compressed = isPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.85);
+          update({ companyLogo: compressed });
+        } catch {
+          update({ companyLogo: src });
+        }
+      };
+      img.onerror = () => update({ companyLogo: src });
+      img.src = src;
     };
     reader.onerror = () => onNotify(tr('logoUploadError'), 'info');
     reader.readAsDataURL(file);

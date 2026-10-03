@@ -58,7 +58,7 @@ function compressImage(file: File): Promise<{ dataUrl: string; mimeType: string 
       img.onerror = () => resolve({ dataUrl: src, mimeType: file.type });
       img.src = src;
     };
-    reader.onerror = () => resolve({ dataUrl: '', mimeType: file.type });
+    reader.onerror = () => resolve({ dataUrl: '', mimeType: '' });
     reader.readAsDataURL(file);
   });
 }
@@ -104,10 +104,12 @@ export function PhotoGrid({
         };
       }),
     );
+    const valid = mapped.filter((img) => img.dataUrl);
+    if (valid.length === 0) return;
     if (max === Infinity) {
-      onChange([...images, ...mapped]);
+      onChange([...images, ...valid]);
     } else {
-      onChange([...images, ...mapped].slice(0, max));
+      onChange([...images, ...valid].slice(0, max));
     }
   }
 
@@ -127,7 +129,11 @@ export function PhotoGrid({
       <div className="grid grid-cols-3 gap-2.5">
         {images.map((img) => (
           <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden group">
-            <img src={img.dataUrl} alt={img.name} className="w-full h-full object-cover" />
+            {img.dataUrl ? (
+              <img src={img.dataUrl} alt={img.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-slate-800" />
+            )}
             <button
               onClick={() => remove(img.id)}
               className="absolute top-1 right-1 w-6 h-6 rounded-full bg-slate-900/80 flex items-center justify-center text-white"

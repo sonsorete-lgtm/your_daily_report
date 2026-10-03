@@ -48,7 +48,8 @@ export function ReportViewScreen({ locale, report, onBack }: ReportViewScreenPro
   }
 
   const reportDoc = doc.doc;
-  const date = formatDateMMDDYYYY(new Date(report.submittedAt));
+  const submittedDate = report.submittedAt ? new Date(report.submittedAt) : new Date();
+  const date = formatDateMMDDYYYY(submittedDate);
 
   return (
     <div className="pt-6 pb-4">

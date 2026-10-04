@@ -425,6 +425,14 @@ export async function buildReportPdfDoc(doc_: ReportDocument): Promise<jsPDF> {
   }
 
   if (doc_.showImages && doc_.images.length > 0) {
+    // Note on page 1 indicating images follow on page 2
+    ctx.y += 10;
+    ensureSpace(ctx, 20);
+    doc.setFont(FONT_SERIF, 'normal');
+    doc.setFontSize(10.5);
+    doc.setTextColor(...DARK);
+    doc.text('Image Attachments on Page 2', MARGIN, ctx.y);
+
     // Images always go on a new page — page 1 is text only
     await writeImageGrid(ctx, doc_.images, doc_.imagesTitle);
   }

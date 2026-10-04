@@ -28,7 +28,7 @@ const FOOTER_TEXT = 'Created with YOUR DAILY REPORT APP';
 const QR_URL = 'https://nvztechnologies.org/';
 const LOGO_MAX_W = 160;
 const LOGO_MAX_H = 70;
-const QR_SIZE = 32;
+const QR_SIZE = 42;
 const FOOTER_PADDING = 10; // bottom margin from page edge to footer content
 
 interface PdfCtx {
@@ -320,7 +320,7 @@ function writeHeader(ctx: PdfCtx, doc_: ReportDocument) {
 async function generateQrDataUrl(url: string): Promise<string> {
   return QRCode.toDataURL(url, {
     margin: 1,
-    width: 120,
+    width: 156,
     errorCorrectionLevel: 'M',
     color: { dark: '#64748b', light: '#ffffff' },
   });

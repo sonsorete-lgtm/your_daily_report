@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  ChevronDown, ArrowRight, CheckCircle2, User,
+  ChevronDown, ArrowRight, CheckCircle2, User, ExternalLink,
 } from 'lucide-react';
 import type {
   WorkSite, EmployeeProfile, Locale, ReportTemplate,
@@ -118,6 +118,19 @@ export function RecordScreen({
           onOpenReportTemplate={onOpenReportTemplate}
         />
       )}
+
+      <div className="mt-8 mb-2 fade-in">
+        <p className="text-xs text-slate-500 text-center mb-3">Try our other apps</p>
+        <a
+          href="https://nvztechnologies.org/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-sm hover:bg-slate-700 hover:border-amber-500/40 transition-all active:scale-[0.98]"
+        >
+          <ExternalLink className="w-4 h-4 text-amber-400" />
+          NVZ Technologies
+        </a>
+      </div>
     </div>
   );
 }

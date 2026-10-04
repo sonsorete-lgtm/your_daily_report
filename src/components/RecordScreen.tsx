@@ -120,6 +120,7 @@ export function RecordScreen({
       )}
 
       <div className="mt-8 mb-2 fade-in">
+        <p className="text-xs text-orange-500 font-semibold text-center mb-3">Version 6.2</p>
         <p className="text-xs text-slate-500 text-center mb-3">Try our other apps</p>
         <a
           href="https://nvztechnologies.org/"

@@ -2,6 +2,15 @@ import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+
+async function ensureStoragePermission(): Promise<void> {
+  const status = await Filesystem.checkPermissions();
+  if (status.publicStorage === 'granted') return;
+  const reqStatus = await Filesystem.requestPermissions();
+  if (reqStatus.publicStorage !== 'granted') {
+    throw new Error('Storage permission was denied. Please grant storage access to save PDFs to your device.');
+  }
+}
 import { Share } from '@capacitor/share';
 import type { ReportDocument, FieldRow } from './reportDocument';
 
@@ -450,6 +459,7 @@ export async function downloadReportPdf(doc_: ReportDocument, filename: string):
 
   if (Capacitor.isNativePlatform()) {
     try {
+      await ensureStoragePermission();
       await writeToDirectory(doc, safeName, Directory.Documents);
     } catch (err) {
       throw new Error(
